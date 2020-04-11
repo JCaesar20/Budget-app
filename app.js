@@ -4,6 +4,7 @@ var budgetController = (function () {
         this.id = id;
         this.decription = description;
         this.value = value;
+        this.percentage = -1;
     }
 
     Expense.prototype.calculatePercentages = function(totalIncome) {
@@ -69,7 +70,7 @@ var budgetController = (function () {
                 return current.id;
             });
 
-            index = ids.indexOf(id);
+            var index = ids.indexOf(id);
 
             if(index !== -1){
                 data.allItems[type].splice(index, 1);
@@ -81,9 +82,11 @@ var budgetController = (function () {
             calculateTotal('inc');
 
             data.budget = data.totals.inc - data.totals.exp;
-            if(data.totals.inc > 0)
+            if(data.totals.inc > 0){
             data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
-        
+        }else{
+            data.percentage = -1;
+        }
         },
         calculatePercentages: function(){
             data.allItems.exp.forEach(function(cur) {
@@ -174,7 +177,7 @@ var UIController = (function () {
             }
             newHtml = html.replace('%id%', obj.id);
             newHtml = newHtml.replace('%description%', obj.decription);
-            newHtml = newHtml.replace('%value%', obj.value);
+            newHtml = newHtml.replace('%value%', formatNumber(obj.value, type));
 
 
             document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
@@ -203,9 +206,9 @@ var UIController = (function () {
             var type;
             obj.budget > 0 ? type = 'inc' : type = 'exp';
 
-            document.querySelector(DOMstrings.budgetLabel).textContent = formatNumber(obj.budget, type);
-            document.querySelector(DOMstrings.incomeLabel).textContent = formatNumber(obj.totalInc, 'inc');
-            document.querySelector(DOMstrings.expensesLabel).textContent = formatNumber(obj.totalExp, 'exp');
+            document.querySelector(DOMStrings.budgetLabel).textContent = formatNumber(obj.budget, type);
+            document.querySelector(DOMStrings.incomeLabel).textContent = formatNumber(obj.totalInc, 'inc');
+            document.querySelector(DOMStrings.expensesLabel).textContent = formatNumber(obj.totalExp, 'exp');
             
             
             if(obj.percentage > 0){
@@ -219,7 +222,7 @@ var UIController = (function () {
 
         displayPercentages: function(percentages) {
             
-            var fields = document.querySelectorAll(DOMstrings.expensesPercLabel);
+            var fields = document.querySelectorAll(DOMStrings.expensesPercLabel);
             
             nodeListForEach(fields, function(current, index) {
                 
@@ -241,20 +244,20 @@ var UIController = (function () {
             month = now.getMonth();
             
             year = now.getFullYear();
-            document.querySelector(DOMstrings.dateLabel).textContent = months[month] + ' ' + year;
+            document.querySelector(DOMStrings.dateLabel).textContent = months[month] + ' ' + year;
         },
         changedType: function() {
             
             var fields = document.querySelectorAll(
-                DOMstrings.inputType + ',' +
-                DOMstrings.inputDescription + ',' +
-                DOMstrings.inputValue);
+                DOMStrings.inputType + ',' +
+                DOMStrings.inputDescription + ',' +
+                DOMStrings.inputValue);
             
             nodeListForEach(fields, function(cur) {
                cur.classList.toggle('red-focus'); 
             });
             
-            document.querySelector(DOMstrings.inputBtn).classList.toggle('red');
+            document.querySelector(DOMStrings.inputBtn).classList.toggle('red');
             
         },
 
@@ -272,7 +275,7 @@ var controller = (function (budgetCtrl, UICtrl) {
         var DOM = UICtrl.getDOMStrings()
         document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem)
         document.addEventListener('keypress', function (event) {
-            if (event.keyCode === 13) {
+            if (event.keyCode === 13 || event.which === 13) {
                 ctrlAddItem();
             }
         });
